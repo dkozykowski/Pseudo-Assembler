@@ -62,7 +62,7 @@ void moveTo(int y, int x)
 void color(int k)
 {
 	WORD kolor;
-	if (k == 0)	kolor = 0x000f; //white
+	if (k == 0) kolor = 0x000f; //white
 	if (k == 1) kolor = 0x000a; //green
 	if (k == 2) kolor = 0x000e; //yellow
 	if (k == 3) kolor = 0x000c; //red
