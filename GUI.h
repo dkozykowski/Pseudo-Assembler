@@ -187,6 +187,10 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 	for (int i = 0; i < *varNumber; i++)
 	{
 		line ++;
+		for (int z = (*(memory + i)).firstIndex; z <= (*(memory + i)).lastIndex; z++)
+		{
+			if (memoryStackPrevious[z] == 1) varNumberPrevious[i] = 1; 
+		}
 		if (i == *k)
 		{ 
 			color(3);
@@ -372,12 +376,12 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 
 
 //operates GUI
-void display(int *k, int *inputSize, int *varNumber, struct singleCommand *input, int *registers, int *registersPrevious, int *registersNone, int *registersNonePrevious, int *toChange, char state[10], char statePrevious[10], struct variable *memory, int *memoryStack, int *memoryStackPrevious, int *varNumberPrevious)
+void display(int k, int *inputSize, int *varNumber, struct singleCommand *input, int *registers, int *registersPrevious, int *registersNone, int *registersNonePrevious, int *toChange, char state[10], char statePrevious[10], struct variable *memory, int *memoryStack, int *memoryStackPrevious, int *varNumberPrevious)
 {
-	leftSide(k, inputSize, varNumber, input, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, statePrevious, memory, memoryStack, memoryStackPrevious, varNumberPrevious);
-	rightSide(k, inputSize, input);
+	leftSide(&k, inputSize, varNumber, input, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, statePrevious, memory, memoryStack, memoryStackPrevious, varNumberPrevious);
+	rightSide(&k, inputSize, input);
 	color(2);
-	if (*k + 1 == *inputSize)
+	if (k + 1 == *inputSize)
 	{
 		moveTo(0, 50);
 		clear();
