@@ -6,13 +6,10 @@
 #define showContent 1 //if equal to 1 - whole tables' content is leftSideed; if 0 - just indicator to its' first element
 #define firstAddress 100
 
-
 struct singleCommand input[300];
 struct variable memory[300];
 int inputSize, memoryStack[100000], stackPointer, varNumber, registers[20], registersPrevious[20], registersNone[20], registersNonePrevious[20], line, toChange[30], memoryStackPrevious[100000], varNumberPrevious[1000];
 char state[10], statePrevious[10];
-
-
 
 int main(void)
 {
