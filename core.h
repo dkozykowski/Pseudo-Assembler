@@ -564,13 +564,14 @@ void C(int i, struct singleCommand *input, int *varNumberPrevious, int *register
 	int howMuch = 0;
 	for (; z < (int)strlen((*(input + i)).argument2) - 1; z++)
 	{
-		//printf("%d %d\n", z, (int)strlen((*(input + i)).argument2) - 1);
 		howMuch *= 10;
 		howMuch += (*(input + i)).argument2[z] - '0';
 	}
 	if((*(input + i)).argument2[(int)strlen((*(input + i)).argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	
+	moveTo(0, 0);
+	clear();
 	if (registers[index] - index2 > 0) strcpy(state, "01");
 	else if (registers[index] - index2 < 0) strcpy(state, "10");
 	else if (registers[index] - index2 == 0) strcpy(state, "00");
@@ -616,7 +617,7 @@ int J(int i, struct singleCommand *input,  int *varNumberPrevious, int *register
 {
 	for (int k = 0; k < *inputSize; k++)
 		if (strcmp(input[k].label, (*(input + i)).argument1) == 0) return k;
-	return i;
+	return i + 1;
 }
 
 //<label> JZ arg1
@@ -626,7 +627,7 @@ int JZ(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 	if (strcmp(state, "00") == 0)
 		for (int k = 0; k < *inputSize; k++)
 			if (strcmp(input[k].label, (*(input + i)).argument1) == 0) return k;
-	return i;
+	return i + 1;
 }
 
 //<label> JP arg1
@@ -636,7 +637,7 @@ int JP(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 	if (strcmp(state, "01") == 0)
 		for (int k = 0; k < *inputSize; k++)
 			if (strcmp(input[k].label, (*(input + i)).argument1) == 0) return k;
-	return i;
+	return i + 1;
 }
 
 //<label> JN arg1
@@ -646,7 +647,7 @@ int JN(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 	if (strcmp(state, "10") == 0)
 		for (int k = 0; k < *inputSize; k++)
 			if (strcmp(input[k].label, (*(input + i)).argument1) == 0) return k;
-	return i;
+	return i + 1;
 }
 
 //<label> L <arg1> <arg2>
@@ -846,7 +847,7 @@ void lineByLine(int *inputSize, int *varNumber, struct singleCommand *input, int
 {
 	for (int i = 0; i < *inputSize; i++)
 	{
-		strcpy(state, "00");
+		int z = i + 1;
 		if (strcmp((*(input + i)).type,      "DC") == 0)     DC(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "DS") == 0)     DS(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "A")  == 0)      A(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
@@ -859,16 +860,17 @@ void lineByLine(int *inputSize, int *varNumber, struct singleCommand *input, int
 		else if (strcmp((*(input + i)).type, "DR") == 0)     DR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "C")  == 0)      C(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, state, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "CR") == 0)     CR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, state, stackPointer, memory, varNumber);
-		else if (strcmp((*(input + i)).type, "J")  == 0)  i = J(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
-		else if (strcmp((*(input + i)).type, "JZ") == 0) i = JZ(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
-		else if (strcmp((*(input + i)).type, "JP") == 0) i = JP(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
-		else if (strcmp((*(input + i)).type, "JN") == 0) i = JN(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
+		else if (strcmp((*(input + i)).type, "J")  == 0)  z = J(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
+		else if (strcmp((*(input + i)).type, "JZ") == 0) z = JZ(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
+		else if (strcmp((*(input + i)).type, "JP") == 0) z = JP(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
+		else if (strcmp((*(input + i)).type, "JN") == 0) z = JN(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
 		else if (strcmp((*(input + i)).type, "L")  == 0)      L(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "LA") == 0)     LA(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "LR") == 0)     LR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "ST") == 0)     ST(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		display(i, inputSize, varNumber, input, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, statePrevious, memory, memoryStack, memoryStackPrevious, varNumberPrevious);
 		update(i, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, varNumber, varNumberPrevious, memoryStack, memoryStackPrevious, memory, statePrevious);
+		i = z - 1;
 		char x[1000];
 		gets(x);
 	}
