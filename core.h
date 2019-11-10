@@ -810,8 +810,6 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 			index2 *= 10;
 			index2 += (*(input + i)).argument2[z] - '0';
 		}
-		index2 -= firstAddress;
-		index2 /= 4;
 	}
 	else
 	{
@@ -823,11 +821,12 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 			temporaryLabel[z] = (*(input + i)).argument2[z];
 		}
 		for (int o = 0; o < *varNumber; o++)
-			if (strcmp((*(memory + o)).label, temporaryLabel) == 0)
-			{ 
-				index2 = (*(memory + o)).firstIndex;
-				varNumberPrevious[o] = 1;
-			}										
+		if (strcmp((*(memory + o)).label, temporaryLabel) == 0)
+		{ 
+			index2 = (*(memory + o)).firstIndex;
+			varNumberPrevious[o] = 1;
+		}
+		index2 = index2 * 4 + 100;										
 	}
 	z ++;
 	int howMuch = 0;
@@ -836,10 +835,10 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 		howMuch *= 10;
 		howMuch += (*(input + i)).argument2[z] - '0';
 	}
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = registers[howMuch] / 4 + index2;
-	
-	memoryStackPrevious[index2] = 1;
-	memoryStack[index2] = registers[index];
+	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = (registers[howMuch] + index2 - 100) /4;
+	else index2 = (index2 - 100) / 4;
+	*(memoryStackPrevious + index2) = 1;
+	*(memoryStack + index2) = *(registers + index);
 }
 
 //calls function to operate every single line of input in terminal one by one
@@ -868,7 +867,7 @@ void lineByLine(int *inputSize, int *varNumber, struct singleCommand *input, int
 		else if (strcmp((*(input + i)).type, "LA") == 0)     LA(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "LR") == 0)     LR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
 		else if (strcmp((*(input + i)).type, "ST") == 0)     ST(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		display(&i, inputSize, varNumber, input, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, statePrevious, memory, memoryStack, memoryStackPrevious, varNumberPrevious);
+		display(i, inputSize, varNumber, input, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, statePrevious, memory, memoryStack, memoryStackPrevious, varNumberPrevious);
 		update(i, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, varNumber, varNumberPrevious, memoryStack, memoryStackPrevious, memory, statePrevious);
 		char x[1000];
 		gets(x);
