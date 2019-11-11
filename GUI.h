@@ -4,7 +4,7 @@
 #define showContent 1 //if equal to 1 - whole tables' content is leftSideed; if 0 - just indicator to its' first element
 #define firstAddress 100
 
-//hides blin*king cursor
+//hides blinking cursor
 void hideCursor()
 {
     HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -201,7 +201,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
 				
 				moveTo(27 + line, 13);
-				printf("%d", *(memoryStack + (*(memory + i)).firstIndex));
+				printf("%d    ", *(memoryStack + (*(memory + i)).firstIndex));
 				
 				moveTo(27 + line, 26);
 				printf("%s[0]\n", (*(memory + i)).label);
@@ -212,7 +212,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
-					printf("%d", (*(memoryStack + o)));
+					printf("%d    ", (*(memoryStack + o)));
 					
 					moveTo(27 + line, 26);
 					printf("%s[%d]\n", (*(memory + i)).label, z);
@@ -224,7 +224,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 			{
 				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
 				moveTo(27 + line, 13);
-				printf("%d", (*(memoryStack + (*(memory + i)).firstIndex)));
+				printf("%d    ", (*(memoryStack + (*(memory + i)).firstIndex)));
 				moveTo(27 + line, 26);
 				
 				printf("%s\n", (*(memory + i)).label);
@@ -241,7 +241,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
 				
 				moveTo(27 + line, 13);
-				printf("%d", *(memoryStack+ (*(memory + i)).firstIndex));
+				printf("%d    ", *(memoryStack+ (*(memory + i)).firstIndex));
 				
 				moveTo(27 + line, 26);
 				printf("%s[0]\n", (*(memory + i)).label);
@@ -254,7 +254,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
-					printf("%d", memoryStack[o]);
+					printf("%d    ", memoryStack[o]);
 					
 					moveTo(27 + line, 26);
 					printf("%s[%d]\n", (*(memory + i)).label, z);
@@ -268,7 +268,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
 				moveTo(27 + line, 13);
 				
-				printf("%d", *(memoryStack+ (*(memory + i)).firstIndex));
+				printf("%d    ", *(memoryStack+ (*(memory + i)).firstIndex));
 				moveTo(27 + line, 26);
 				
 				printf("%s\n", (*(memory + i)).label);
@@ -285,7 +285,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
 				
 				moveTo(27 + line, 13);
-				printf("%d", *(memoryStack+ (*(memory + i)).firstIndex));
+				printf("%d    ", *(memoryStack+ (*(memory + i)).firstIndex));
 				
 				moveTo(27 + line, 26);
 				printf("%s[0]\n", (*(memory + i)).label);
@@ -296,7 +296,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
-					printf("%d", memoryStack[o]);
+					printf("%d    ", memoryStack[o]);
 					
 					moveTo(27 + line, 26);
 					printf("%s[%d]\n", (*(memory + i)).label, z);
@@ -308,7 +308,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
 				moveTo(27 + line, 13);
 				
-				printf("%d", *(memoryStack + (*(memory + i)).firstIndex));
+				printf("%d    ", *(memoryStack + (*(memory + i)).firstIndex));
 				moveTo(27 + line, 26);
 				
 				printf("%s\n", (*(memory + i)).label);
@@ -323,7 +323,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
 				
 				moveTo(27 + line, 13);
-				printf("%d", *(memoryStack+ (*(memory + i)).firstIndex));
+				printf("%d    ", *(memoryStack+ (*(memory + i)).firstIndex));
 				
 				moveTo(27 + line, 26);
 				printf("%s[0]\n", (*(memory + i)).label);
@@ -334,7 +334,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
-					printf("%d", memoryStack[o]);
+					printf("%d    ", memoryStack[o]);
 					
 					moveTo(27 + line, 26);
 					printf("%s[%d]\n", (*(memory + i)).label, z);
@@ -347,7 +347,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
 				moveTo(27 + line, 13);
 				
-				printf("%d", *(memoryStack + (*(memory + i)).firstIndex));
+				printf("%d    ", *(memoryStack + (*(memory + i)).firstIndex));
 				moveTo(27 + line, 26);
 				
 				printf("%s\n", (*(memory + i)).label);
