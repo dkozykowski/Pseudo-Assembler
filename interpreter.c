@@ -13,14 +13,19 @@ char state[10], statePrevious[10];
 
 int main(void)
 {
+	int i = 0;
 	strcpy(state, "00");
 	strcpy(statePrevious, state);
 	maximize();
 	hideCursor();
-	for (int i = 0; i <= 15; i++) registersNone[i] = -1, registersNonePrevious[i] =- 1, toChange[i] = 1;
+	
+	for (i = 0; i <= 15; i++)
+	{
+		registersNone[i] = -1;
+		registersNonePrevious[i] = -1;
+		toChange[i] = 1;
+	}
+	
 	readInput(&inputSize, &varNumber, &input[0], &registers[0], &registersPrevious[0], &registersNone[0], &registersNonePrevious[0], &toChange[0], &state[0], &statePrevious[0], &memory[0], &memoryStack[0], &memoryStackPrevious[0], &varNumberPrevious[0], &stackPointer);
-	int k = -1;
-	leftSide(&k, &inputSize, &varNumber, &input[0], &registers[0], &registersPrevious[0], &registersNone[0], &registersNonePrevious[0], &toChange[0], &state[0], &statePrevious[0], &memory[0], &memoryStack[0], &memoryStackPrevious[0], &varNumberPrevious[0]);
-	lineByLine(&inputSize, &varNumber, &input[0], &registers[0], &registersPrevious[0], &registersNone[0], &registersNonePrevious[0], &toChange[0], &state[0], &statePrevious[0], &memory[0], &memoryStack[0], &memoryStackPrevious[0], &varNumberPrevious[0], &stackPointer);
 	moveTo(max(40, 23 + stackPointer) + 3, 0);
 }
