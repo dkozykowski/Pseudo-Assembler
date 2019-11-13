@@ -34,7 +34,3 @@ D 3 A_
 D 4 A_
 ST 3 FIRSTROOT
 ST 4 SECONDROOT
-
-
-
-
