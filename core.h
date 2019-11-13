@@ -783,8 +783,8 @@ void LR(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 		}
 		else break;
 	}
-	
 	registers[index] = registers[index2];
+	registersNone[index] = 0;
 }
 
 //<label> ST <arg1> <arg2>
