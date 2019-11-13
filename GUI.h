@@ -17,7 +17,8 @@ void hideCursor()
 //clears some space in a row from trash
 void clear(void)
 {
-	for (int z = 0; z < 70; z++) printf(" ");
+	int z = 0;
+	for (z = 0; z < 70; z++) printf(" ");
 	printf("\r");
 }
 
@@ -52,14 +53,17 @@ void color(int k)
 //displays right side of terminal
 void rightSide(int *k, int *inputSize, struct singleCommand *input)
 {
+	int start, stop;
+	int lineNumber = 0;
+	int i = 0;
+	
 	color(2);
 	moveTo(2, 80 + shift);
 	printf("Commands: \n\n");
 	moveTo(4, 80 + shift);
 	printf("Line nr:   Label:       Type:    Argument1:             Argument2:\n");
 	color(0);
-	int start, stop;
-	int lineNumber = 0;
+	
 	if (*inputSize <= 40)
 	{
 		start = 0;
@@ -80,7 +84,8 @@ void rightSide(int *k, int *inputSize, struct singleCommand *input)
 		start = *inputSize - 40;
 		stop = *inputSize;
 	}
-	for (int i = start; i < stop; i++)
+	
+	for (i = start; i < stop; i++)
 	{
 		lineNumber ++;
 		if (i == *k)
@@ -148,28 +153,33 @@ void rightSide(int *k, int *inputSize, struct singleCommand *input)
 //displays left side of terminal
 void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *input, int *registers, int *registersPrevious, int *registersNone, int *registersNonePrevious, int *toChange, char state[10], char statePrevious[10], struct variable *memory, int *memoryStack, int *memoryStackPrevious, int *varNumberPrevious)
 {
+	int i = 0;
+	int z = 0;
+	int o = 0;
+	
 	color(2);
 	moveTo(2, 0);
 	puts("Registers:\n");
 	printf("Index:       Value:\n");
 	color(0);
-	for (int i = 0; i <= 15; i++)
+	
+	for (i = 0; i <= 15; i++)
 	{
 		if (registersNonePrevious[i] != registersNone[i] || registers[i] != registersPrevious[i])
 		{
 			color(3);
-			if (i < 10 && *(registersNone + i) != -1) clear(), printf("%d:           %d\n", i, *(registers + i));
-			else if (i < 10 && *(registersNone + i) == -1) clear(), printf("%d:           NONE\n", i);
-			else if (i >= 10 && *(registersNone + i) != -1) clear(), printf("%d:          %d\n", i, *(registers + i));
-			else if (i >= 10 && *(registersNone + i) == -1) clear(), printf("%d:          NONE\n", i);
+			if (i < 10 && registersNone[i] != -1) clear(), printf("%d:           %d\n", i, registers[i]);
+			else if (i < 10 && registersNone[i] == -1) clear(), printf("%d:           NONE\n", i);
+			else if (i >= 10 && registersNone[i] != -1) clear(), printf("%d:          %d\n", i, registers[i]);
+			else if (i >= 10 && registersNone[i] == -1) clear(), printf("%d:          NONE\n", i);
 			color(0);
 		}
 		else if (toChange[i])
 		{
-			if (i < 10 && *(registersNone + i) != -1) clear(), printf("%d:           %d\n", i, *(registers + i));
-			else if (i < 10 && *(registersNone + i)== -1) clear(), printf("%d:           NONE\n", i);
-			else if (i >= 10 && *(registersNone + i) != -1) clear(), printf("%d:          %d\n", i, *(registers + i));
-			else if (i >= 10 && *(registersNone + i) == -1) clear(), printf("%d:          NONE\n", i);
+			if (i < 10 && registersNone[i] != -1) clear(), printf("%d:           %d\n", i, registers[i]);
+			else if (i < 10 && registersNone[i]== -1) clear(), printf("%d:           NONE\n", i);
+			else if (i >= 10 && registersNone[i] != -1) clear(), printf("%d:          %d\n", i, registers[i]);
+			else if (i >= 10 && registersNone[i] == -1) clear(), printf("%d:          NONE\n", i);
 			if (registersNonePrevious[i] != registersNone[i] || registers[i] != registersPrevious[i]) color(0);
 		}
 		else printf("\n");
@@ -184,10 +194,10 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 	puts("Address:     Variable:    Label:");
 	color(0);
 	int line = -1;
-	for (int i = 0; i < *varNumber; i++)
+	for (i = 0; i < *varNumber; i++)
 	{
 		line ++;
-		for (int z = (*(memory + i)).firstIndex; z <= (*(memory + i)).lastIndex; z++)
+		for (z = memory[i].firstIndex; z <= memory[i].lastIndex; z++)
 		{
 			if (memoryStackPrevious[z] == 1) varNumberPrevious[i] = 1; 
 		}
@@ -195,59 +205,59 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 		{ 
 			color(3);
 			//if veriable is an array
-			if (showContent && (*(memory + i)).firstIndex + 1 != (*(memory + i)).lastIndex)
+			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
 				
-				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
+				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
-				printf("%d    ", *(memoryStack + (*(memory + i)).firstIndex));
+				printf("%d    ", memoryStack[memory[i].firstIndex]);
 				
 				moveTo(27 + line, 26);
-				printf("%s[0]\n", (*(memory + i)).label);
+				printf("%s[0]\n", memory[i].label);
 				
-				for (int o = (*(memory + i)).firstIndex + 1, z = 1; o < (*(memory + i)).lastIndex; o++, z++)
+				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
 					line ++;
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
-					printf("%d    ", (*(memoryStack + o)));
+					printf("%d    ", memoryStack[o]);
 					
 					moveTo(27 + line, 26);
-					printf("%s[%d]\n", (*(memory + i)).label, z);
+					printf("%s[%d]\n", memory[i].label, z);
 
 				} 
 			}
 			
 			else //if veriable is a single int
 			{
-				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
+				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
-				printf("%d    ", (*(memoryStack + (*(memory + i)).firstIndex)));
+				printf("%d    ", memoryStack[memory[i].firstIndex]);
 				moveTo(27 + line, 26);
 				
-				printf("%s\n", (*(memory + i)).label);
+				printf("%s\n", memory[i].label);
 			}
 			color(0);
 		}
-		else if (*(varNumberPrevious + i) == 1)
+		else if (varNumberPrevious[i] == 1)
 		{ 
 			color(0);
 			//if veriable is an array
-			if (showContent && (*(memory + i)).firstIndex + 1 != (*(memory + i)).lastIndex)
+			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
-				if (*(memoryStackPrevious+ (*(memory + i)).firstIndex) == 1) color(3);
-				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
+				if (memoryStackPrevious[memory[i].firstIndex]) color(3);
+				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
-				printf("%d    ", *(memoryStack+ (*(memory + i)).firstIndex));
+				printf("%d    ", memoryStack[memory[i].firstIndex]);
 				
 				moveTo(27 + line, 26);
-				printf("%s[0]\n", (*(memory + i)).label);
+				printf("%s[0]\n", memory[i].label);
 				color(0);
 				
-				for (int o = (*(memory + i)).firstIndex + 1, z = 1; o < (*(memory + i)).lastIndex; o++, z++)
+				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
 					if (memoryStackPrevious[o] == 1) color(3);
 					line ++;
@@ -257,21 +267,20 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("%d    ", memoryStack[o]);
 					
 					moveTo(27 + line, 26);
-					printf("%s[%d]\n", (*(memory + i)).label, z);
+					printf("%s[%d]\n", memory[i].label, z);
 					color(0);
 				} 
 			}
-			
 			else //if veriable is a single int
 			{
-				if (*(memoryStackPrevious+ (*(memory + i)).firstIndex) == 1) color(3);
-				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
+				if (memoryStackPrevious[memory[i].firstIndex]) color(3);
+				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
 				
-				printf("%d    ", *(memoryStack+ (*(memory + i)).firstIndex));
+				printf("%d    ", memoryStack[memory[i].firstIndex]);
 				moveTo(27 + line, 26);
 				
-				printf("%s\n", (*(memory + i)).label);
+				printf("%s\n", memory[i].label);
 				color(0);
 			}
 			color(0);
@@ -280,17 +289,17 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 		{ 
 			color(0);
 			//if veriable is an array
-			if (showContent && (*(memory + i)).firstIndex + 1 != (*(memory + i)).lastIndex)
+			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
-				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
+				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
-				printf("%d    ", *(memoryStack+ (*(memory + i)).firstIndex));
+				printf("%d    ", memoryStack[memory[i].firstIndex]);
 				
 				moveTo(27 + line, 26);
-				printf("%s[0]\n", (*(memory + i)).label);
+				printf("%s[0]\n", memory[i].label);
 				
-				for (int o = (*(memory + i)).firstIndex + 1, z = 1; o < (*(memory + i)).lastIndex; o++, z++)
+				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
 					line ++;
 					printf("%d", firstAddress + o * 4);
@@ -299,36 +308,35 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("%d    ", memoryStack[o]);
 					
 					moveTo(27 + line, 26);
-					printf("%s[%d]\n", (*(memory + i)).label, z);
+					printf("%s[%d]\n", memory[i].label, z);
 				} 
 			}
-			
 			else //if veriable is a single int
 			{
-				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
+				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
 				
-				printf("%d    ", *(memoryStack + (*(memory + i)).firstIndex));
+				printf("%d    ", memoryStack[memory[i].firstIndex]);
 				moveTo(27 + line, 26);
 				
-				printf("%s\n", (*(memory + i)).label);
+				printf("%s\n", memory[i].label);
 			}
 		}
 		else if (i == *k - 1)
 		{
 			//if veriable is an array
-			if (showContent && (*(memory + i)).firstIndex + 1 != (*(memory + i)).lastIndex)
+			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
 				
-				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
+				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
-				printf("%d    ", *(memoryStack+ (*(memory + i)).firstIndex));
+				printf("%d    ", memoryStack[memory[i].firstIndex]);
 				
 				moveTo(27 + line, 26);
-				printf("%s[0]\n", (*(memory + i)).label);
+				printf("%s[0]\n", memory[i].label);
 				
-				for (int o = (*(memory + i)).firstIndex + 1, z = 1; o < (*(memory + i)).lastIndex; o++, z++)
+				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
 					line ++;
 					printf("%d", firstAddress + o * 4);
@@ -337,38 +345,35 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("%d    ", memoryStack[o]);
 					
 					moveTo(27 + line, 26);
-					printf("%s[%d]\n", (*(memory + i)).label, z);
+					printf("%s[%d]\n", memory[i].label, z);
 
 				} 
 			}
-			
 			else //if veriable is a single int
 			{
-				printf("%d", firstAddress + (*(memory + i)).firstIndex * 4);
+				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
 				
-				printf("%d    ", *(memoryStack + (*(memory + i)).firstIndex));
+				printf("%d    ", memoryStack[memory[i].firstIndex]);
 				moveTo(27 + line, 26);
 				
-				printf("%s\n", (*(memory + i)).label);
+				printf("%s\n", memory[i].label);
 			}
 		}
 		else
 		{
 			//if veriable is an array
-			if (showContent && (*(memory + i)).firstIndex + 1 != (*(memory + i)).lastIndex)
+			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
 				printf("\n");
-				for (int o = (*(memory + i)).firstIndex + 1, z = 1; o < (*(memory + i)).lastIndex; o++, z++)
+				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
 					line ++;
 					printf("\n");
 				} 
 			}
 			else //if veriable is a single int
-			{
 				printf("\n");
-			}
 		}
 	}
 	color(2);
