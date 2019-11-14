@@ -1,12 +1,5 @@
-#include <windows.h>
-#include <stdio.h>
-#define shift 30
-#define showContent 1 //if equal to 1 - whole tables' content is leftSideed; if 0 - just indicator to its' first element
-#define firstAddress 100
-FILE *commands;
-
 //updates color of old variables from red to white
-void update(int k, int *registers, int *registersPrevious, int *registersNone, int *registersNonePrevious, int *toChange, char state[10], int *varNumber, int *varNumberPrevious, int *memoryStack, int *memoryStackPrevious, struct variable *memory, char statePrevious[10])
+void update(int k)
 {
 	int line = -1;
 	int i = 0;
@@ -15,12 +8,15 @@ void update(int k, int *registers, int *registersPrevious, int *registersNone, i
 	
 	for (i = 0; i <= 15; i++)
 	{
+		//if there was a change made, save it in toChange to print it in red font later
 		if (registersNonePrevious[i] != registersNone[i] || registers[i] != registersPrevious[i])
 		{
 			registersNonePrevious[i] = registersNone[i];
 			registersPrevious[i] = registers[i];
 			toChange[i] = 1;
 		}
+		
+		//if there was no change made, just update all arrays
 		else if (toChange[i])
 		{
 			if (registersNonePrevious[i] != registersNone[i] || registers[i] != registersPrevious[i]) color(0);
@@ -30,38 +26,56 @@ void update(int k, int *registers, int *registersPrevious, int *registersNone, i
 		}
 	}
 	
+	//update old status
 	strcpy(statePrevious, state);
-	for (i = 0; i < *varNumber; i++)
+	
+	for (i = 0; i < varNumber; i++)
 	{
 		line ++;
 		if (i == k) {}
+		
+		//if variable or some of array's cell was printed with red font, save it in varNumberPrevious
+		//to print it in white font later
 		else if (varNumberPrevious[i] == 1)
 		{ 
 			varNumberPrevious[i] = -1;
+			
+			//if variable is an array 
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
+				//that is the cell that was printed with red font
 				if (memoryStackPrevious[memory[i].firstIndex] == 1)	memoryStackPrevious[memory[i].firstIndex] = -1;
+				
 				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 					if (memoryStackPrevious[o] == 1) memoryStackPrevious[o] = -1;
 			}
+			
+			//if variable is just a single integer
 			else if (memoryStackPrevious[memory[i].firstIndex] == 1) memoryStackPrevious[memory[i].firstIndex] = -1;
 		}
+
+		//if variable or some of array's cell was re-printed with white font, 
+		//update all arrays to remember it needs re-printing anymore
 		else if (varNumberPrevious[i] == -1)
 		{ 
 			varNumberPrevious[i] = 0;
+			
+			//if variable is an array 
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
 				if (memoryStackPrevious[memory[i].firstIndex] == 1)	memoryStackPrevious[memory[i].firstIndex] = 0;
 				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 					if (memoryStackPrevious[o] == 1) memoryStackPrevious[o] = 0;
 			}
+			
+			//if variable is just a single integer
 			else if (memoryStackPrevious[memory[i].firstIndex] == 1)	memoryStackPrevious[memory[i].firstIndex] = 0;
 		}
 	}
 }
 
 //checks if label is a function type
-int check(int k, struct singleCommand *input)
+int check(int k)
 {
 	if (strcmp(input[k].label, "A") == 0 || \
 	strcmp(input[k].label, "AR")    == 0 || \
@@ -86,15 +100,18 @@ int check(int k, struct singleCommand *input)
 
 //<label> DC <arg1> <arg2>
 //allocates memory with value
-void DC(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void DC(int i)
 {	
-	strcpy(memory[*varNumber].label, input[i].label);
-	memory[*varNumber].firstIndex = *stackPointer;
 	int negative = 1;
 	int howMuch1 = 0;
 	int o;
 	int power10 = 1;
 	int howMuch = 0;
+	
+	strcpy(memory[varNumber].label, input[i].label);
+	memory[varNumber].firstIndex = stackPointer;
+	
+	//get the value
 	if (input[i].argument1[(int)strlen(input[i].argument1) - 1] == ')')
 	{
 		for (o = (int)strlen(input[i].argument1) - 2; input[i].argument1[o] != '('; o--)
@@ -108,26 +125,35 @@ void DC(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 			power10 *= 10;
 		}
 	}
+	
+	//get the ammount of cells
 	for (o = 0; input[i].argument1[o] != '*'; o++)
 	{
 		if (!('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')) break;
 		howMuch *= 10;
 		howMuch += input[i].argument1[o] - '0';
 	}
+	
 	howMuch = max(1, howMuch);
-	howMuch += *stackPointer;
-	for (; *stackPointer < howMuch; (*stackPointer)++) memoryStack[*stackPointer] = negative * howMuch1;
-	memory[*varNumber].lastIndex = *stackPointer;
-	(*varNumber)++;
+	howMuch += stackPointer;
+	
+	//get the shift of address
+	for (; stackPointer < howMuch; (stackPointer)++) memoryStack[stackPointer] = negative * howMuch1;
+	
+	memory[varNumber].lastIndex = stackPointer;
+	varNumber++;
 }
 
 //<label> DS <arg1>
 //allocates memory without value
-void DS(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void DS(int i)
 {
-	strcpy(memory[*varNumber].label, input[i].label);
-	memory[*varNumber].firstIndex = *stackPointer;
 	int o;
+	
+	strcpy(memory[varNumber].label, input[i].label);
+	memory[varNumber].firstIndex = stackPointer;
+	
+	//get the ammount of cells
 	if (input[i].argument1[0] != 'I')
 	{
 		int howMuch = 0;
@@ -138,14 +164,16 @@ void DS(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 		}
 		stackPointer += howMuch;
 	}
-	else (*stackPointer)++;
-	memory[*varNumber].lastIndex = *stackPointer;
-	(*varNumber)++;
+	//if the variable is just a single int
+	else (stackPointer)++;
+	
+	memory[varNumber].lastIndex = stackPointer;
+	(varNumber)++;
 }
 
 //<label> A <arg1> <arg2>
 //adds memory with index arg2 to register with index arg2
-void A(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void A(int i)
 {
 	char temporaryLabel[30];
 	int index = 0;
@@ -154,6 +182,7 @@ void A(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 	int o;
 	char x = 0;
 	
+	//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -163,6 +192,8 @@ void A(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		}
 		else break;
 	}
+	
+	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
 		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
@@ -173,6 +204,8 @@ void A(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		index2 -= firstAddress;
 		index2 /= 4;
 	}
+	
+	//change label to address
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
@@ -181,18 +214,20 @@ void A(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
 		}
-		for (o = 0; o < *varNumber; o++)
+		for (o = 0; o < varNumber; o++)
 			if (strcmp(memory[o].label, temporaryLabel) == 0) 
 				index2 = memory[o].firstIndex;										
 	}
+	
+	//get the register number if address was shifted
 	z ++;
 	int howMuch = 0;
 	for (; z < (int)strlen(input[i].argument2) - 1; z++)
 	{
-		//printf("%d %d\n", z, (int)strlen(input[i].argument2) - 1);
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
+	
 	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] += index2;
@@ -201,7 +236,7 @@ void A(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 
 //<label> AR <arg1> <arg2>
 //adds register with index arg2 to register with index arg2
-void AR(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void AR(int i)
 {
 	int index = 0;
 	int index2 = 0;
@@ -232,7 +267,7 @@ void AR(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 
 //<label> S <arg1> <arg2>
 //subtracts register with index arg2 by memory with index arg2
-void S(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void S(int i)
 {
 	char temporaryLabel[30];
 	int index = 0;
@@ -241,6 +276,7 @@ void S(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 	int o = 0;
 	char x = 0;	
 	
+	//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -250,6 +286,8 @@ void S(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		}
 		else break;
 	}
+	
+	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
 		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
@@ -260,26 +298,30 @@ void S(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		index2 -= firstAddress;
 		index2 /= 4;
 	}
+	
+	//change label to address
 	else
-	{
+	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
 		for (; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
 		}
-		for (o = 0; o < *varNumber; o++)
+		for (o = 0; o < varNumber; o++)
 			if (strcmp(memory[o].label, temporaryLabel) == 0) 
 				index2 = memory[o].firstIndex;										
 	}
+	
+	//get the register number if address was shifted
 	z ++;
 	int howMuch = 0;
 	for (; z < (int)strlen(input[i].argument2) - 1; z++)
 	{
-		//printf("%d %d\n", z, (int)strlen(input[i].argument2) - 1);
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
+	
 	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] -= index2;
@@ -288,7 +330,7 @@ void S(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 
 //<label> SR <arg1> <arg2>
 //subtracts register with index arg2 by register with index arg2
-void SR(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void SR(int i)
 {
 	int index = 0;
 	int index2 = 0;
@@ -319,7 +361,7 @@ void SR(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 
 //<label> M <arg1> <arg2>
 //multiplies register with index arg2 by memory with index arg2
-void M(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void M(int i)
 {
 	char temporaryLabel[30];
 	int index = 0;
@@ -328,6 +370,7 @@ void M(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 	int o = 0;
 	char x = 0;
 	
+		//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -337,6 +380,8 @@ void M(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		}
 		else break;
 	}
+	
+	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
 		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
@@ -347,6 +392,8 @@ void M(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		index2 -= firstAddress;
 		index2 /= 4;
 	}
+	
+	//change label to address
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
@@ -355,18 +402,20 @@ void M(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
 		}
-		for (o = 0; o < *varNumber; o++)
+		for (o = 0; o < varNumber; o++)
 			if (strcmp(memory[o].label, temporaryLabel) == 0) 
 				index2 = memory[o].firstIndex;										
 	}
+	
+	//get the register number if address was shifted
 	z ++;
 	int howMuch = 0;
 	for (; z < (int)strlen(input[i].argument2) - 1; z++)
 	{
-		//printf("%d %d\n", z, (int)strlen(input[i].argument2) - 1);
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
+	
 	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] *= index2;
@@ -375,7 +424,7 @@ void M(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 
 //<label> MR <arg1> <arg2>
 //multiplies register with index arg2 by register with index arg2
-void MR(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void MR(int i)
 {
 	int index = 0;
 	int index2 = 0;
@@ -406,7 +455,7 @@ void MR(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 
 //<label> D <arg1> <arg2>
 //devides register with index arg2 by memory with index arg2
-void D(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void D(int i)
 {
 	char temporaryLabel[30];
 	int index = 0;
@@ -415,6 +464,7 @@ void D(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 	int o = 0;
 	char x = 0;	
 	
+		//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -424,6 +474,8 @@ void D(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		}
 		else break;
 	}
+	
+	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
 		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
@@ -434,26 +486,30 @@ void D(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		index2 -= firstAddress;
 		index2 /= 4;
 	}
+	
+	//change label to address
 	else
-	{
+	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
 		for (; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
 		}
-		for (o = 0; o < *varNumber; o++)
+		for (o = 0; o < varNumber; o++)
 			if (strcmp(memory[o].label, temporaryLabel) == 0) 
 				index2 = memory[o].firstIndex;										
 	}
+	
+	//get the register number if address was shifted
 	z ++;
 	int howMuch = 0;
 	for (; z < (int)strlen(input[i].argument2) - 1; z++)
 	{
-		//printf("%d %d\n", z, (int)strlen(input[i].argument2) - 1);
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
+	
 	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] /= index2;
@@ -462,7 +518,7 @@ void D(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 
 //<label> DR <arg1> <arg2>
 //devides register with index arg2 by register with index arg2
-void DR(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void DR(int i)
 {
 	int index = 0;
 	int index2 = 0;
@@ -496,7 +552,7 @@ void DR(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 //01 if arg1 > arg2
 //00 if arg1 == arg2
 //10 if arg1 < arg2
-void C(int i, struct singleCommand *input, int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, char state[10], int *stackPointer, struct variable *memory, int *varNumber)
+void C(int i)
 {
 	char temporaryLabel[30];
 	int index = 0;
@@ -505,6 +561,7 @@ void C(int i, struct singleCommand *input, int *varNumberPrevious, int *register
 	int o = 0;
 	char x = 0;
 	
+		//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -514,6 +571,8 @@ void C(int i, struct singleCommand *input, int *varNumberPrevious, int *register
 		}
 		else break;
 	}
+	
+	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
 		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
@@ -524,6 +583,8 @@ void C(int i, struct singleCommand *input, int *varNumberPrevious, int *register
 		index2 -= firstAddress;
 		index2 /= 4;
 	}
+	
+	//change label to address
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
@@ -532,10 +593,12 @@ void C(int i, struct singleCommand *input, int *varNumberPrevious, int *register
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
 		}
-		for (o = 0; o < *varNumber; o++)
+		for (o = 0; o < varNumber; o++)
 			if (strcmp(memory[o].label, temporaryLabel) == 0) 
 				index2 = memory[o].firstIndex;										
 	}
+	
+	//get the register number if address was shifted
 	z ++;
 	int howMuch = 0;
 	for (; z < (int)strlen(input[i].argument2) - 1; z++)
@@ -543,6 +606,7 @@ void C(int i, struct singleCommand *input, int *varNumberPrevious, int *register
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
+	
 	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	
@@ -558,7 +622,7 @@ void C(int i, struct singleCommand *input, int *varNumberPrevious, int *register
 //01 if arg1 > arg2
 //00 if arg1 == arg2
 //10 if arg1 < arg2
-void CR(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, char state[10], int *stackPointer, struct variable *memory, int *varNumber)
+void CR(int i)
 {
 	int index = 0;
 	int index2 = 0;
@@ -591,54 +655,54 @@ void CR(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 
 //<label> J arg1
 //jumps to line with label == arg1 
-int J(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *inputSize, char state[10])
+int J(int i)
 {
 	int k = 0;
 	
-	for (k = 0; k < *inputSize; k++)
+	for (k = 0; k < inputSize; k++)
 		if (strcmp(input[k].label, input[i].argument1) == 0) return k;
 	return i + 1;
 }
 
 //<label> JZ arg1
 //if program state == 00: jumps to line with label == arg1
-int JZ(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *inputSize, char state[10])
+int JZ(int i)
 {
 	int k = 0;
 	
 	if (strcmp(state, "00") == 0)
-		for (k = 0; k < *inputSize; k++)
+		for (k = 0; k < inputSize; k++)
 			if (strcmp(input[k].label, input[i].argument1) == 0) return k;
 	return i + 1;
 }
 
 //<label> JP arg1
 //if program state == 01: jumps to line with label == arg1
-int JP(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *inputSize, char state[10])
+int JP(int i)
 {
 	int k = 0;
 	
 	if (strcmp(state, "01") == 0)
-		for (k = 0; k < *inputSize; k++)
+		for (k = 0; k < inputSize; k++)
 			if (strcmp(input[k].label, input[i].argument1) == 0) return k;
 	return i + 1;
 }
 
 //<label> JN arg1
 //if program state == 10: jumps to line with label == arg1
-int JN(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *inputSize, char state[10])
+int JN(int i)
 {
 	int k = 0;
 	
 	if (strcmp(state, "10") == 0)
-		for (k = 0; k < *inputSize; k++)
+		for (k = 0; k < inputSize; k++)
 			if (strcmp(input[k].label, input[i].argument1) == 0) return k;
 	return i + 1;
 }
 
 //<label> L <arg1> <arg2>
 //loads memory with index arg2 value to register with index arg1
-void L(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void L(int i)
 {
 	char temporaryLabel[30];
 	int index = 0;
@@ -647,6 +711,7 @@ void L(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 	int o = 0;
 	char x = 0;
 	
+	//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -656,6 +721,8 @@ void L(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		}
 		else break;
 	}
+	
+	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
 		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
@@ -666,6 +733,8 @@ void L(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 		index2 -= firstAddress;
 		index2 /= 4;
 	}
+	
+	//change label to address
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
@@ -674,18 +743,20 @@ void L(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
 		}
-		for (o = 0; o < *varNumber; o++)
+		for (o = 0; o < varNumber; o++)
 			if (strcmp(memory[o].label, temporaryLabel) == 0) 
 				index2 = memory[o].firstIndex;										
 	}
+	
+	//get the register number if address was shifted
 	z ++;
 	int howMuch = 0;
 	for (; z < (int)strlen(input[i].argument2) - 1; z++)
 	{
-		//printf("%d %d\n", z, (int)strlen(input[i].argument2) - 1);
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
+	
 	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] = index2;
@@ -694,7 +765,7 @@ void L(int i, struct singleCommand *input,  int *varNumberPrevious, int *registe
 
 //<label> LA <arg1> <arg2>
 //loads memory with index arg2 address to register with index arg1
-void LA(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void LA(int i)
 {
 	char temporaryLabel[30];
 	int index = 0;
@@ -703,6 +774,7 @@ void LA(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 	int o = 0;
 	char x = 0;
 	
+	//get the first argument address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -712,6 +784,8 @@ void LA(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 		}
 		else break;
 	}
+	
+	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
 		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
@@ -722,6 +796,8 @@ void LA(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 		index2 -= firstAddress;
 		index2 /= 4;
 	}
+	
+	//change label to address
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
@@ -730,18 +806,20 @@ void LA(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
 		}
-		for (o = 0; o < *varNumber; o++)
+		for (o = 0; o < varNumber; o++)
 			if (strcmp(memory[o].label, temporaryLabel) == 0) 
 				index2 = memory[o].firstIndex;										
 	}
+	
+	//get the register number if address was shifted
 	z ++;
 	int howMuch = 0;
 	for (; z < (int)strlen(input[i].argument2) - 1; z++)
 	{
-		//printf("%d %d\n", z, (int)strlen(input[i].argument2) - 1);
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
+	
 	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = registers[howMuch] / 4 + index2;
 	else index2 = index2;
 	registers[index] = index2 * 4 + firstAddress;
@@ -750,7 +828,7 @@ void LA(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 
 //<label> LR <arg1> <arg2>
 //loads register with index arg2 value to register with index arg1
-void LR(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void LR(int i)
 {
 	int index = 0;
 	int index2 = 0;
@@ -781,7 +859,7 @@ void LR(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 
 //<label> ST <arg1> <arg2>
 //loads register with index arg1 value to memory with index arg2
-void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *registers, int *memoryStack, int *memoryStackPrevious, int *registersNone, int *stackPointer, struct variable *memory, int *varNumber)
+void ST(int i)
 {
 	char temporaryLabel[30];
 	int index = 0;
@@ -790,6 +868,8 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 	int o = 0;
 	char x = 0;
 	
+	
+	//get the first argument address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -800,6 +880,7 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 		else break;
 	}
 	
+	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
 		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
@@ -808,6 +889,8 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 			index2 += input[i].argument2[z] - '0';
 		}
 	}
+	
+	//change label to address
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
@@ -816,7 +899,7 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
 		}
-		for (o = 0; o < *varNumber; o++)
+		for (o = 0; o < varNumber; o++)
 		if (strcmp(memory[o].label, temporaryLabel) == 0)
 		{ 
 			index2 = memory[o].firstIndex;
@@ -825,6 +908,7 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 		index2 = index2 * 4 + 100;										
 	}
 	
+	//get the register number if address was shifted
 	z ++;
 	int howMuch = 0;
 	for (; z < (int)strlen(input[i].argument2) - 1; z++)
@@ -840,36 +924,36 @@ void ST(int i, struct singleCommand *input,  int *varNumberPrevious, int *regist
 }
 
 //calls function to operate every single line of input in terminal one by one
-void lineByLine(int *inputSize, int *varNumber, struct singleCommand *input, int *registers, int *registersPrevious, int *registersNone, int *registersNonePrevious, int *toChange, char state[10], char statePrevious[10], struct variable *memory, int *memoryStack, int *memoryStackPrevious, int *varNumberPrevious, int *stackPointer)
+void lineByLine()
 {
 	int i = 0;
 	char x[1000];
 	
-	for (i = 0; i < *inputSize; i++)
+	for (i = 0; i < inputSize; i++)
 	{
 		int z = i + 1;
-		if (strcmp(input[i].type,      "DC") == 0)     DC(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "DS") == 0)     DS(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "A")  == 0)      A(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "AR") == 0)     AR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "S")  == 0)      S(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "SR") == 0)     SR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "M")  == 0)      M(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "MR") == 0)     MR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "D")  == 0)      D(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "DR") == 0)     DR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "C")  == 0)      C(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, state, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "CR") == 0)     CR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, state, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "J")  == 0)  z = J(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
-		else if (strcmp(input[i].type, "JZ") == 0) z = JZ(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
-		else if (strcmp(input[i].type, "JP") == 0) z = JP(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
-		else if (strcmp(input[i].type, "JN") == 0) z = JN(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, inputSize, state);
-		else if (strcmp(input[i].type, "L")  == 0)      L(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "LA") == 0)     LA(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "LR") == 0)     LR(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		else if (strcmp(input[i].type, "ST") == 0)     ST(i, input, varNumberPrevious, registers, memoryStack, memoryStackPrevious, registersNone, stackPointer, memory, varNumber);
-		display(i, inputSize, varNumber, input, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, statePrevious, memory, memoryStack, memoryStackPrevious, varNumberPrevious);
-		update(i, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, varNumber, varNumberPrevious, memoryStack, memoryStackPrevious, memory, statePrevious);
+		if (strcmp(input[i].type,      "DC") == 0)     DC(i);
+		else if (strcmp(input[i].type, "DS") == 0)     DS(i);
+		else if (strcmp(input[i].type, "A")  == 0)      A(i);
+		else if (strcmp(input[i].type, "AR") == 0)     AR(i);
+		else if (strcmp(input[i].type, "S")  == 0)      S(i);
+		else if (strcmp(input[i].type, "SR") == 0)     SR(i);
+		else if (strcmp(input[i].type, "M")  == 0)      M(i);
+		else if (strcmp(input[i].type, "MR") == 0)     MR(i);
+		else if (strcmp(input[i].type, "D")  == 0)      D(i);
+		else if (strcmp(input[i].type, "DR") == 0)     DR(i);
+		else if (strcmp(input[i].type, "C")  == 0)      C(i);
+		else if (strcmp(input[i].type, "CR") == 0)     CR(i);
+		else if (strcmp(input[i].type, "J")  == 0)  z = J(i);
+		else if (strcmp(input[i].type, "JZ") == 0) z = JZ(i);
+		else if (strcmp(input[i].type, "JP") == 0) z = JP(i);
+		else if (strcmp(input[i].type, "JN") == 0) z = JN(i);
+		else if (strcmp(input[i].type, "L")  == 0)      L(i);
+		else if (strcmp(input[i].type, "LA") == 0)     LA(i);
+		else if (strcmp(input[i].type, "LR") == 0)     LR(i);
+		else if (strcmp(input[i].type, "ST") == 0)     ST(i);
+		display(i);
+		update(i);
 		i = z - 1;
 		
 		gets(x);
@@ -877,7 +961,7 @@ void lineByLine(int *inputSize, int *varNumber, struct singleCommand *input, int
 }
 
 //reads given file line by line and creates an array of struct commands
-void readInput(int *inputSize, int *varNumber, struct singleCommand *input, int *registers, int *registersPrevious, int *registersNone, int *registersNonePrevious, int *toChange, char state[10], char statePrevious[10], struct variable *memory, int *memoryStack, int *memoryStackPrevious, int *varNumberPrevious, int *stackPointer)
+void readInput()
 {
 	commands = fopen("commands.txt", "r");
 	char inputLine[1000];
@@ -889,38 +973,49 @@ void readInput(int *inputSize, int *varNumber, struct singleCommand *input, int 
 	{
 		if (inputLine[0] == '\n') continue;
 		argIndex = charIndex = 0;
+		
 		for (i = 0; (i < (int)strlen(inputLine) && argIndex < 4); i++)
 		{
 			if (('A' <= inputLine[i] && inputLine[i] <= 'Z') || ('0' <= inputLine[i] && inputLine[i] <= '9') || inputLine[i] == '-' || inputLine[i] == '*' || inputLine[i] == '(' || inputLine[i] == ')' || inputLine[i] == '_')
 			{
+				//label
 				if (argIndex == 0)
-					input[*inputSize].label[charIndex] = inputLine[i];
+					input[inputSize].label[charIndex] = inputLine[i];
 					
+				//type
 				if (argIndex == 1)
-					input[*inputSize].type[charIndex] = inputLine[i];
+					input[inputSize].type[charIndex] = inputLine[i];
 					
+				//argument1
 				if (argIndex == 2)
-					input[*inputSize].argument1[charIndex] = inputLine[i];
+					input[inputSize].argument1[charIndex] = inputLine[i];
 					
+				//argument2
 				if (argIndex == 3)
-					input[*inputSize].argument2[charIndex] = inputLine[i];
+					input[inputSize].argument2[charIndex] = inputLine[i];
+					
 				charIndex++;
-			}	
+			}
+				
+			//move to next element of the command
 			else if (charIndex > 0)
 			{
 				argIndex++;
 				charIndex = 0;
 			}
-			if (argIndex == 1 && check(*inputSize, input))
+			
+			//if the given label is a name reserved to commands type
+			//then it is actually command type and label was not given 
+			if (argIndex == 1 && check(inputSize))
 			{
-				strcpy(input[*inputSize].type, input[*inputSize].label);
-				strcpy(input[*inputSize].label, "");
+				strcpy(input[inputSize].type, input[inputSize].label);
+				strcpy(input[inputSize].label, "");
 				argIndex++;
 			}
 		}
-		(*inputSize)++;
+		(inputSize)++;
 	}
 	fclose(commands);
 	
-	lineByLine(inputSize, varNumber, input, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, statePrevious, memory, memoryStack, memoryStackPrevious, varNumberPrevious, stackPointer);
+	lineByLine();
 }
