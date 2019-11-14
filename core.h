@@ -1,9 +1,7 @@
 //updates color of old variables from red to white
 void update(int k)
 {
-	int line = -1;
 	int i = 0;
-	int z = 0;
 	int o = 0;
 	
 	for (i = 0; i <= 15; i++)
@@ -31,45 +29,29 @@ void update(int k)
 	
 	for (i = 0; i < varNumber; i++)
 	{
-		line ++;
-		if (i == k) {}
 		
-		//if variable or some of array's cell was printed with red font, save it in varNumberPrevious
+		//if at least one of arrays' cell was changed, save it
+		for (o = memory[i].firstIndex; o < memory[i].lastIndex; o++)
+			if (memoryStackPrevious[o] == 1) varPrevious[i] = 1;
+		
+		//if variable or some of array's cell was printed with red font, save it in varPrevious
 		//to print it in white font later
-		else if (varNumberPrevious[i] == 1)
+		if (varPrevious[i] == 1)
 		{ 
-			varNumberPrevious[i] = -1;
-			
-			//if variable is an array 
-			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
-			{
-				//that is the cell that was printed with red font
-				if (memoryStackPrevious[memory[i].firstIndex] == 1)	memoryStackPrevious[memory[i].firstIndex] = -1;
-				
-				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
-					if (memoryStackPrevious[o] == 1) memoryStackPrevious[o] = -1;
-			}
-			
-			//if variable is just a single integer
-			else if (memoryStackPrevious[memory[i].firstIndex] == 1) memoryStackPrevious[memory[i].firstIndex] = -1;
+			varPrevious[i] = -1;
+		
+			for (o = memory[i].firstIndex; o < memory[i].lastIndex; o++)
+				if (memoryStackPrevious[o] == 1) memoryStackPrevious[o] = -1;
 		}
 
 		//if variable or some of array's cell was re-printed with white font, 
 		//update all arrays to remember it needs re-printing anymore
-		else if (varNumberPrevious[i] == -1)
+		else if (varPrevious[i] == -1)
 		{ 
-			varNumberPrevious[i] = 0;
-			
-			//if variable is an array 
-			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
-			{
-				if (memoryStackPrevious[memory[i].firstIndex] == 1)	memoryStackPrevious[memory[i].firstIndex] = 0;
-				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
-					if (memoryStackPrevious[o] == 1) memoryStackPrevious[o] = 0;
-			}
-			
-			//if variable is just a single integer
-			else if (memoryStackPrevious[memory[i].firstIndex] == 1)	memoryStackPrevious[memory[i].firstIndex] = 0;
+			varPrevious[i] = 0;
+		
+			for (o = memory[i].firstIndex; o < memory[i].lastIndex; o++)
+				if (memoryStackPrevious[o] == -1) memoryStackPrevious[o] = 0;		
 		}
 	}
 }
@@ -209,7 +191,7 @@ void A(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -303,7 +285,7 @@ void S(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -370,7 +352,7 @@ void M(int i)
 	int o = 0;
 	char x = 0;
 	
-		//get the first argument's address
+	//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -397,7 +379,7 @@ void M(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -491,7 +473,7 @@ void D(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -588,7 +570,7 @@ void C(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -738,7 +720,7 @@ void L(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -801,7 +783,7 @@ void LA(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -894,7 +876,7 @@ void ST(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < (int)strlen(input[i].argument2); z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -903,7 +885,7 @@ void ST(int i)
 		if (strcmp(memory[o].label, temporaryLabel) == 0)
 		{ 
 			index2 = memory[o].firstIndex;
-			varNumberPrevious[o] = 1;
+			varPrevious[o] = 1;
 		}
 		index2 = index2 * 4 + 100;										
 	}
@@ -926,12 +908,15 @@ void ST(int i)
 //calls function to operate every single line of input in terminal one by one
 void lineByLine()
 {
-	int i = 0;
+	int i;
 	char x[1000];
+	int z;
+	int o;
+	int j;
 	
 	for (i = 0; i < inputSize; i++)
 	{
-		int z = i + 1;
+		z = i + 1;
 		if (strcmp(input[i].type,      "DC") == 0)     DC(i);
 		else if (strcmp(input[i].type, "DS") == 0)     DS(i);
 		else if (strcmp(input[i].type, "A")  == 0)      A(i);
@@ -952,6 +937,12 @@ void lineByLine()
 		else if (strcmp(input[i].type, "LA") == 0)     LA(i);
 		else if (strcmp(input[i].type, "LR") == 0)     LR(i);
 		else if (strcmp(input[i].type, "ST") == 0)     ST(i);
+		
+		//if value was just changed, set its' varPrevious to 1 to remember it
+		for (o = 0; o < varNumber; o++)	
+			for (j = memory[o].firstIndex; j < memory[o].lastIndex; j++)
+				if (memoryStackPrevious[j] == 1) 
+					varPrevious[o] = 1;
 		display(i);
 		update(i);
 		i = z - 1;
