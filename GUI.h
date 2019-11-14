@@ -1,9 +1,3 @@
-#include <windows.h>
-#include <stdio.h>
-#define shift 30
-#define showContent 1 //if equal to 1 - whole tables' content is leftSideed; if 0 - just indicator to its' first element
-#define firstAddress 100
-
 //hides blinking cursor
 void hideCursor()
 {
@@ -51,7 +45,7 @@ void color(int k)
 }
 
 //displays right side of terminal
-void rightSide(int *k, int *inputSize, struct singleCommand *input)
+void rightSide(int k)
 {
 	int start, stop;
 	int lineNumber = 0;
@@ -64,31 +58,45 @@ void rightSide(int *k, int *inputSize, struct singleCommand *input)
 	printf("Line nr:   Label:       Type:    Argument1:             Argument2:\n");
 	color(0);
 	
-	if (*inputSize <= 40)
+	//system used to print only 40 lines of code:
+	//if code is less than 40 lines, print them all
+	if (inputSize <= 40)
 	{
 		start = 0;
-		stop = *inputSize;
+		stop = inputSize;
 	}
-	else if (*k <= 20)
+	
+	//if current line number is less than 20
+	//print first 40 lines of code
+	else if (k <= 20)
 	{
 		start = 0;
 		stop = 40;
 	}
-	else if (20 < *k && *k + 20 <= *inputSize)
+	
+	//if there are less than 20 lines left,
+	//print them all and print more previous lines
+	else if (k + 20 > inputSize)
 	{
-		start = *k - 20;
-		stop = *k + 20;
+		start = inputSize - 40;
+		stop = inputSize;
 	}
-	else if (*k + 20 > *inputSize)
+	
+	//in different case print previous and next 20 lines
+	else if (20 < k && k + 20 <= inputSize)
 	{
-		start = *inputSize - 40;
-		stop = *inputSize;
+		start = k - 20;
+		stop = k + 20;
 	}
+	
+	
 	
 	for (i = start; i < stop; i++)
 	{
 		lineNumber ++;
-		if (i == *k)
+		
+		//current line, print it with green font
+		if (i == k)
 		{
 			moveTo(5 + lineNumber - 1, 60 + shift);
 			clear();
@@ -96,11 +104,14 @@ void rightSide(int *k, int *inputSize, struct singleCommand *input)
 			moveTo(5 + lineNumber - 1, 65 + shift);
 			printf("current line ->");
 			printf("%d", i + 1);
+			
 			if (strcmp(input[i].label, "")) 
 			{
 				moveTo(5 + lineNumber - 1, 91 + shift);
 				printf("%s", input[i].label);
 			}
+			
+			//if label was not given, print <NONE> instead
 			else
 			{
 				moveTo(5 + lineNumber - 1, 91 + shift);
@@ -115,9 +126,13 @@ void rightSide(int *k, int *inputSize, struct singleCommand *input)
 			
 			moveTo(5 + lineNumber - 1, 136 + shift);
 			if (strcmp(input[i].argument2, "")) printf("%s\n", input[i].argument2);
+			
+			//if argument2 was not given, print <NONE> instead
 			else printf("<NONE>\n");
 			color(0);
 		}
+		
+		//print rest of lines with white font
 		else
 		{
 			moveTo(5 + lineNumber - 1, 60 + shift);
@@ -131,6 +146,8 @@ void rightSide(int *k, int *inputSize, struct singleCommand *input)
 				moveTo(5 + lineNumber - 1, 91 + shift);
 				printf("%s", input[i].label);			
 			}
+			
+			//if label was not given, print <NONE> instead
 			else
 			{
 				moveTo(5 + lineNumber - 1, 91 + shift);
@@ -144,14 +161,17 @@ void rightSide(int *k, int *inputSize, struct singleCommand *input)
 			printf("%s", input[i].argument1);
 			
 			moveTo(5 + lineNumber - 1, 136 + shift);
+			
 			if (strcmp(input[i].argument2, "")) printf("%s\n", input[i].argument2);
+			
+			//if argument2 was not given, print <NONE> instead
 			else printf("<NONE>\n");
 		}
 	}
 }
 
 //displays left side of terminal
-void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *input, int *registers, int *registersPrevious, int *registersNone, int *registersNonePrevious, int *toChange, char state[10], char statePrevious[10], struct variable *memory, int *memoryStack, int *memoryStackPrevious, int *varNumberPrevious)
+void leftSide(int k)
 {
 	int i = 0;
 	int z = 0;
@@ -165,6 +185,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 	
 	for (i = 0; i <= 15; i++)
 	{
+		//if the registrs' value was just changed, print it in red font
 		if (registersNonePrevious[i] != registersNone[i] || registers[i] != registersPrevious[i])
 		{
 			color(3);
@@ -174,6 +195,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 			else if (i >= 10 && registersNone[i] == -1) clear(), printf("%d:          NONE\n", i);
 			color(0);
 		}
+		//if the registers' value was not changed and it was printed in red font, re-print it with white font
 		else if (toChange[i])
 		{
 			if (i < 10 && registersNone[i] != -1) clear(), printf("%d:           %d\n", i, registers[i]);
@@ -182,26 +204,32 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 			else if (i >= 10 && registersNone[i] == -1) clear(), printf("%d:          NONE\n", i);
 			if (registersNonePrevious[i] != registersNone[i] || registers[i] != registersPrevious[i]) color(0);
 		}
+		//else do not do any changes
 		else printf("\n");
 	}
+	
 	color(2);
 	printf("\nProgram state: ");
 	if (strcmp(state, statePrevious) == 0) color(0);
 	else color(3);
 	printf("%s", state);
+	
 	color(2);
 	puts("\n\nMemory:\n");
 	puts("Address:     Variable:    Label:");
 	color(0);
+	
 	int line = -1;
-	for (i = 0; i < *varNumber; i++)
+	for (i = 0; i < varNumber; i++)
 	{
 		line ++;
+		//if value was just changed, set its' varNumberPrevious to 1 to remember it
 		for (z = memory[i].firstIndex; z <= memory[i].lastIndex; z++)
-		{
-			if (memoryStackPrevious[z] == 1) varNumberPrevious[i] = 1; 
-		}
-		if (i == *k)
+			if (memoryStackPrevious[z] == 1) 
+				varNumberPrevious[i] = 1;
+				
+		//if variable was just declared, print it in red font
+		if (i == k)
 		{ 
 			color(3);
 			//if veriable is an array
@@ -230,7 +258,8 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				} 
 			}
 			
-			else //if veriable is a single int
+			//if veriable is a single int
+			else 
 			{
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
@@ -241,6 +270,10 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 			}
 			color(0);
 		}
+		
+		//if array's varNumberPrevious equals 1
+		//it means there is at least one cell that was meant
+		//to print it with red font because some changes was made
 		else if (varNumberPrevious[i] == 1)
 		{ 
 			color(0);
@@ -259,6 +292,7 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				
 				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
+					//this is the cell that was meant to be printed in red font
 					if (memoryStackPrevious[o] == 1) color(3);
 					line ++;
 					printf("%d", firstAddress + o * 4);
@@ -271,8 +305,11 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					color(0);
 				} 
 			}
-			else //if veriable is a single int
+			
+			//if veriable is a single int
+			else 
 			{
+				//if there was a change made, print this value it in red font
 				if (memoryStackPrevious[memory[i].firstIndex]) color(3);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
@@ -285,6 +322,9 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 			}
 			color(0);
 		}
+		
+		//value was recently printed in red font, no changes was made
+		//so re-print it with white font
 		else if (varNumberPrevious[i] == -1)
 		{ 
 			color(0);
@@ -311,7 +351,9 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("%s[%d]\n", memory[i].label, z);
 				} 
 			}
-			else //if veriable is a single int
+			
+			//if veriable is a single int
+			else 
 			{
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
@@ -322,12 +364,14 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%s\n", memory[i].label);
 			}
 		}
-		else if (i == *k - 1)
+		
+		//that is the variable that was just declared, so it was printed with red font
+		//re-print it with white font
+		else if (i == k - 1)
 		{
 			//if veriable is an array
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
-				
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
@@ -349,7 +393,9 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 
 				} 
 			}
-			else //if veriable is a single int
+			
+			//if veriable is a single int
+			else 
 			{
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
@@ -360,6 +406,8 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 				printf("%s\n", memory[i].label);
 			}
 		}
+		
+		//no changes needs to be made, just skip those lines
 		else
 		{
 			//if veriable is an array
@@ -372,7 +420,8 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 					printf("\n");
 				} 
 			}
-			else //if veriable is a single int
+			//if veriable is a single int
+			else 
 				printf("\n");
 		}
 	}
@@ -381,23 +430,28 @@ void leftSide(int *k, int *inputSize, int *varNumber, struct singleCommand *inpu
 
 
 //operates GUI
-void display(int k, int *inputSize, int *varNumber, struct singleCommand *input, int *registers, int *registersPrevious, int *registersNone, int *registersNonePrevious, int *toChange, char state[10], char statePrevious[10], struct variable *memory, int *memoryStack, int *memoryStackPrevious, int *varNumberPrevious)
+void display(int k)
 {
-	leftSide(&k, inputSize, varNumber, input, registers, registersPrevious, registersNone, registersNonePrevious, toChange, state, statePrevious, memory, memoryStack, memoryStackPrevious, varNumberPrevious);
-	rightSide(&k, inputSize, input);
+	leftSide(k);
+	rightSide(k);
+	
 	color(2);
-	if (k + 1 == *inputSize)
+	
+	//there are no lines of code left
+	if (k + 1 == inputSize)
 	{
 		moveTo(0, 50);
 		clear();
 		moveTo(0, 80);
 		printf("<press enter to close>");
-	} 
+	}
+	
+	//there are lines of code left 
 	else
 	{
 		moveTo(0, 70);
 		printf("<press enter to proceed to next line>");
 	} 
+	
 	color(0);
-	moveTo(0, 0);
 }
