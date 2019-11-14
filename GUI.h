@@ -111,13 +111,6 @@ void rightSide(int k)
 				printf("%s", input[i].label);
 			}
 			
-			//if label was not given, print <NONE> instead
-			else
-			{
-				moveTo(5 + lineNumber - 1, 91 + shift);
-				printf("<NONE>");
-			}
-			
 			moveTo(5 + lineNumber - 1, 104 + shift);
 			printf("%s", input[i].type);
 			
@@ -127,8 +120,6 @@ void rightSide(int k)
 			moveTo(5 + lineNumber - 1, 136 + shift);
 			if (strcmp(input[i].argument2, "")) printf("%s\n", input[i].argument2);
 			
-			//if argument2 was not given, print <NONE> instead
-			else printf("<NONE>\n");
 			color(0);
 		}
 		
@@ -146,13 +137,6 @@ void rightSide(int k)
 				moveTo(5 + lineNumber - 1, 91 + shift);
 				printf("%s", input[i].label);			
 			}
-			
-			//if label was not given, print <NONE> instead
-			else
-			{
-				moveTo(5 + lineNumber - 1, 91 + shift);
-				printf("<NONE>");
-			}
 
 			moveTo(5 + lineNumber - 1, 104 + shift);
 			printf("%s", input[i].type);
@@ -163,9 +147,6 @@ void rightSide(int k)
 			moveTo(5 + lineNumber - 1, 136 + shift);
 			
 			if (strcmp(input[i].argument2, "")) printf("%s\n", input[i].argument2);
-			
-			//if argument2 was not given, print <NONE> instead
-			else printf("<NONE>\n");
 		}
 	}
 }
@@ -190,20 +171,22 @@ void leftSide(int k)
 		{
 			color(3);
 			if (i < 10 && registersNone[i] != -1) clear(), printf("%d:           %d\n", i, registers[i]);
-			else if (i < 10 && registersNone[i] == -1) clear(), printf("%d:           NONE\n", i);
+			else if (i < 10 && registersNone[i] == -1) clear(), printf("%d:\n", i);
 			else if (i >= 10 && registersNone[i] != -1) clear(), printf("%d:          %d\n", i, registers[i]);
-			else if (i >= 10 && registersNone[i] == -1) clear(), printf("%d:          NONE\n", i);
+			else if (i >= 10 && registersNone[i] == -1) clear(), printf("%d:\n", i);
 			color(0);
 		}
+		
 		//if the registers' value was not changed and it was printed in red font, re-print it with white font
 		else if (toChange[i])
 		{
 			if (i < 10 && registersNone[i] != -1) clear(), printf("%d:           %d\n", i, registers[i]);
-			else if (i < 10 && registersNone[i]== -1) clear(), printf("%d:           NONE\n", i);
+			else if (i < 10 && registersNone[i]== -1) clear(), printf("%d:\n", i);
 			else if (i >= 10 && registersNone[i] != -1) clear(), printf("%d:          %d\n", i, registers[i]);
-			else if (i >= 10 && registersNone[i] == -1) clear(), printf("%d:          NONE\n", i);
+			else if (i >= 10 && registersNone[i] == -1) clear(), printf("%d:\n", i);
 			if (registersNonePrevious[i] != registersNone[i] || registers[i] != registersPrevious[i]) color(0);
 		}
+		
 		//else do not do any changes
 		else printf("\n");
 	}
@@ -223,11 +206,7 @@ void leftSide(int k)
 	for (i = 0; i < varNumber; i++)
 	{
 		line ++;
-		//if value was just changed, set its' varNumberPrevious to 1 to remember it
-		for (z = memory[i].firstIndex; z <= memory[i].lastIndex; z++)
-			if (memoryStackPrevious[z] == 1) 
-				varNumberPrevious[i] = 1;
-				
+		
 		//if variable was just declared, print it in red font
 		if (i == k)
 		{ 
@@ -235,7 +214,6 @@ void leftSide(int k)
 			//if veriable is an array
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
-				
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
@@ -271,10 +249,10 @@ void leftSide(int k)
 			color(0);
 		}
 		
-		//if array's varNumberPrevious equals 1
+		//if array's varPrevious equals 1
 		//it means there is at least one cell that was meant
 		//to print it with red font because some changes was made
-		else if (varNumberPrevious[i] == 1)
+		else if (varPrevious[i] == 1)
 		{ 
 			color(0);
 			//if veriable is an array
@@ -325,9 +303,10 @@ void leftSide(int k)
 		
 		//value was recently printed in red font, no changes was made
 		//so re-print it with white font
-		else if (varNumberPrevious[i] == -1)
-		{ 
+		else if (varPrevious[i] == -1)
+		{
 			color(0);
+			
 			//if veriable is an array
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
@@ -355,6 +334,8 @@ void leftSide(int k)
 			//if veriable is a single int
 			else 
 			{
+				color(0);
+				
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
 				
@@ -369,6 +350,8 @@ void leftSide(int k)
 		//re-print it with white font
 		else if (i == k - 1)
 		{
+			color(0);
+			
 			//if veriable is an array
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
