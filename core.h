@@ -954,16 +954,17 @@ void lineByLine()
 //reads given file line by line and creates an array of struct commands
 void readInput()
 {
+	char x[100];
+	char inputLine[1000];
+	int argIndex = 0; 
+	int charIndex = 0; 
+	int i = 0;
+	
 	color(0);
 	printf("Please write Your program name with extention: ");
 	scanf("%s", fileName);
 	commands = fopen(fileName, "r");
 	system("cls");
-	
-	char inputLine[1000];
-	int argIndex = 0; 
-	int charIndex = 0; 
-	int i = 0;
 	
 	while(fgets(inputLine, 1000, commands) != NULL)
 	{
@@ -1012,6 +1013,8 @@ void readInput()
 		(inputSize)++;
 	}
 	fclose(commands);
+	
+	gets(x);
 	
 	lineByLine();
 }
