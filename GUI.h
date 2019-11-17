@@ -12,7 +12,7 @@ void hideCursor()
 void clear(void)
 {
 	int z = 0;
-	for (z = 0; z < 70; z++) printf(" ");
+	for (z = 0; z < 90; z++) printf(" ");
 	printf("\r");
 }
 
