@@ -214,6 +214,7 @@ void leftSide(int k)
 			//if veriable is an array
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
+				moveTo(27 + line, 0);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
@@ -225,6 +226,7 @@ void leftSide(int k)
 				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
 					line ++;
+					moveTo(27 + line, 0);
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
@@ -239,6 +241,7 @@ void leftSide(int k)
 			//if veriable is a single int
 			else 
 			{
+				moveTo(27 + line, 0);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
 				printf("%d    ", memoryStack[memory[i].firstIndex]);
@@ -259,6 +262,7 @@ void leftSide(int k)
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
 				if (memoryStackPrevious[memory[i].firstIndex]) color(3);
+				moveTo(27 + line, 0);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
@@ -273,6 +277,7 @@ void leftSide(int k)
 					//this is the cell that was meant to be printed in red font
 					if (memoryStackPrevious[o] == 1) color(3);
 					line ++;
+					moveTo(27 + line, 0);
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
@@ -289,6 +294,7 @@ void leftSide(int k)
 			{
 				//if there was a change made, print this value it in red font
 				if (memoryStackPrevious[memory[i].firstIndex]) color(3);
+				moveTo(27 + line, 0);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
 				
@@ -310,6 +316,7 @@ void leftSide(int k)
 			//if veriable is an array
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
+				moveTo(27 + line, 0);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
@@ -321,6 +328,7 @@ void leftSide(int k)
 				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
 					line ++;
+					moveTo(27 + line, 0);
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
@@ -335,7 +343,7 @@ void leftSide(int k)
 			else 
 			{
 				color(0);
-				
+				moveTo(27 + line, 0);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
 				
@@ -355,6 +363,7 @@ void leftSide(int k)
 			//if veriable is an array
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
 			{
+				moveTo(27 + line, 0);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				
 				moveTo(27 + line, 13);
@@ -366,6 +375,7 @@ void leftSide(int k)
 				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
 				{
 					line ++;
+					moveTo(27 + line, 0);
 					printf("%d", firstAddress + o * 4);
 					
 					moveTo(27 + line, 13);
@@ -380,6 +390,7 @@ void leftSide(int k)
 			//if veriable is a single int
 			else 
 			{
+				moveTo(27 + line, 0);
 				printf("%d", firstAddress + memory[i].firstIndex * 4);
 				moveTo(27 + line, 13);
 				
@@ -395,17 +406,7 @@ void leftSide(int k)
 		{
 			//if veriable is an array
 			if (showContent && memory[i].firstIndex + 1 != memory[i].lastIndex)
-			{
-				printf("\n");
-				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++)
-				{
-					line ++;
-					printf("\n");
-				} 
-			}
-			//if veriable is a single int
-			else 
-				printf("\n");
+				for (o = memory[i].firstIndex + 1, z = 1; o < memory[i].lastIndex; o++, z++) line ++;
 		}
 	}
 	color(2);
