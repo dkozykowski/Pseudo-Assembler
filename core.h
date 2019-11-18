@@ -89,14 +89,15 @@ void DC(int i)
 	int o;
 	int power10 = 1;
 	int howMuch = 0;
+	int z = strlen(input[i].argument1);
 	
 	strcpy(memory[varNumber].label, input[i].label);
 	memory[varNumber].firstIndex = stackPointer;
 	
 	//get the value
-	if (input[i].argument1[(int)strlen(input[i].argument1) - 1] == ')')
+	if (input[i].argument1[z - 1] == ')')
 	{
-		for (o = (int)strlen(input[i].argument1) - 2; input[i].argument1[o] != '('; o--)
+		for (o = z - 2; input[i].argument1[o] != '('; o--)
 		{
 			if (input[i].argument1[o] == '-')
 			{
@@ -131,6 +132,7 @@ void DC(int i)
 void DS(int i)
 {
 	int o;
+	int howMuch = 0;
 	
 	strcpy(memory[varNumber].label, input[i].label);
 	memory[varNumber].firstIndex = stackPointer;
@@ -138,7 +140,6 @@ void DS(int i)
 	//get the ammount of cells
 	if (input[i].argument1[0] != 'I')
 	{
-		int howMuch = 0;
 		for (o = 0; input[i].argument1[o] != '*'; o++)
 		{
 			howMuch *= 10;
@@ -163,6 +164,8 @@ void A(int i)
 	int z = 0;
 	int o;
 	char x = 0;
+	int k = strlen(input[i].argument2);
+	int howMuch = 0;
 	
 	//get the first argument's address
 	for (o = 0; o < 10; o++)
@@ -178,7 +181,7 @@ void A(int i)
 	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
-		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
+		for (; (z < k && input[i].argument2[z] != '('); z++)
 		{
 			index2 *= 10;
 			index2 += input[i].argument2[z] - '0';
@@ -191,7 +194,7 @@ void A(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (z = 0; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < k; z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -203,14 +206,13 @@ void A(int i)
 	
 	//get the register number if address was shifted
 	z ++;
-	int howMuch = 0;
-	for (; z < (int)strlen(input[i].argument2) - 1; z++)
+	for (; z < k - 1; z++)
 	{
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
 	
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
+	if(input[i].argument2[k - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] += index2;
 	registersNone[index] = 0;
@@ -257,6 +259,8 @@ void S(int i)
 	int z = 0;
 	int o = 0;
 	char x = 0;	
+	int k = strlen(input[i].argument2);
+	int howMuch = 0;
 	
 	//get the first argument's address
 	for (o = 0; o < 10; o++)
@@ -272,7 +276,7 @@ void S(int i)
 	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
-		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
+		for (; (z < k && input[i].argument2[z] != '('); z++)
 		{
 			index2 *= 10;
 			index2 += input[i].argument2[z] - '0';
@@ -285,7 +289,7 @@ void S(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (z = 0; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < k; z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -297,14 +301,13 @@ void S(int i)
 	
 	//get the register number if address was shifted
 	z ++;
-	int howMuch = 0;
-	for (; z < (int)strlen(input[i].argument2) - 1; z++)
+	for (; z < k - 1; z++)
 	{
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
 	
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
+	if(input[i].argument2[k - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] -= index2;
 	registersNone[index] = 0;
@@ -351,6 +354,8 @@ void M(int i)
 	int z = 0;
 	int o = 0;
 	char x = 0;
+	int k = strlen(input[i].argument2);
+	int howMuch = 0;
 	
 	//get the first argument's address
 	for (o = 0; o < 10; o++)
@@ -366,7 +371,7 @@ void M(int i)
 	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
-		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
+		for (; (z < k && input[i].argument2[z] != '('); z++)
 		{
 			index2 *= 10;
 			index2 += input[i].argument2[z] - '0';
@@ -379,7 +384,7 @@ void M(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (z = 0; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < k; z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -391,14 +396,13 @@ void M(int i)
 	
 	//get the register number if address was shifted
 	z ++;
-	int howMuch = 0;
-	for (; z < (int)strlen(input[i].argument2) - 1; z++)
+	for (; z < k - 1; z++)
 	{
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
 	
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
+	if(input[i].argument2[k - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] *= index2;
 	registersNone[index] = 0;
@@ -445,8 +449,10 @@ void D(int i)
 	int z = 0;
 	int o = 0;
 	char x = 0;	
+	int k = strlen(input[i].argument2);
+	int howMuch = 0;
 	
-		//get the first argument's address
+	//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -460,7 +466,7 @@ void D(int i)
 	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
-		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
+		for (; (z < k && input[i].argument2[z] != '('); z++)
 		{
 			index2 *= 10;
 			index2 += input[i].argument2[z] - '0';
@@ -473,7 +479,7 @@ void D(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (z = 0; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < k; z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -485,14 +491,13 @@ void D(int i)
 	
 	//get the register number if address was shifted
 	z ++;
-	int howMuch = 0;
-	for (; z < (int)strlen(input[i].argument2) - 1; z++)
+	for (; z < k - 1; z++)
 	{
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
 	
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
+	if(input[i].argument2[k - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] /= index2;
 	registersNone[index] = 0;
@@ -542,8 +547,10 @@ void C(int i)
 	int z = 0;
 	int o = 0;
 	char x = 0;
+	int k = strlen(input[i].argument2);
+	int howMuch = 0;
 	
-		//get the first argument's address
+	//get the first argument's address
 	for (o = 0; o < 10; o++)
 	{
 		if ('0' <= input[i].argument1[o] && input[i].argument1[o] <= '9')
@@ -557,7 +564,7 @@ void C(int i)
 	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
-		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
+		for (; (z < k && input[i].argument2[z] != '('); z++)
 		{
 			index2 *= 10;
 			index2 += input[i].argument2[z] - '0';
@@ -570,7 +577,7 @@ void C(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (z = 0; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < k; z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -582,18 +589,15 @@ void C(int i)
 	
 	//get the register number if address was shifted
 	z ++;
-	int howMuch = 0;
-	for (; z < (int)strlen(input[i].argument2) - 1; z++)
+	for (; z < k - 1; z++)
 	{
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
 	
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
+	if(input[i].argument2[k - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	
-	moveTo(0, 0);
-	clear();
 	if (registers[index] - index2 > 0) strcpy(state, "01");
 	else if (registers[index] - index2 < 0) strcpy(state, "10");
 	else if (registers[index] - index2 == 0) strcpy(state, "00");
@@ -692,6 +696,8 @@ void L(int i)
 	int z = 0;
 	int o = 0;
 	char x = 0;
+	int k = strlen(input[i].argument2);
+	int howMuch = 0;
 	
 	//get the first argument's address
 	for (o = 0; o < 10; o++)
@@ -707,7 +713,7 @@ void L(int i)
 	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
-		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
+		for (; (z < k && input[i].argument2[z] != '('); z++)
 		{
 			index2 *= 10;
 			index2 += input[i].argument2[z] - '0';
@@ -720,7 +726,7 @@ void L(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (z = 0; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < k; z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -732,14 +738,13 @@ void L(int i)
 	
 	//get the register number if address was shifted
 	z ++;
-	int howMuch = 0;
-	for (; z < (int)strlen(input[i].argument2) - 1; z++)
+	for (; z < k - 1; z++)
 	{
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
 	
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
+	if(input[i].argument2[k - 1] == ')') index2 = memoryStack[registers[howMuch] / 4 + index2];
 	else index2 = memoryStack[index2];
 	registers[index] = index2;
 	registersNone[index] = 0;
@@ -755,6 +760,8 @@ void LA(int i)
 	int z = 0;
 	int o = 0;
 	char x = 0;
+	int k = strlen(input[i].argument2);
+	int howMuch = 0;
 	
 	//get the first argument address
 	for (o = 0; o < 10; o++)
@@ -770,7 +777,7 @@ void LA(int i)
 	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
-		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
+		for (; (z < k && input[i].argument2[z] != '('); z++)
 		{
 			index2 *= 10;
 			index2 += input[i].argument2[z] - '0';
@@ -783,7 +790,7 @@ void LA(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (z = 0; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < k; z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -795,14 +802,13 @@ void LA(int i)
 	
 	//get the register number if address was shifted
 	z ++;
-	int howMuch = 0;
-	for (; z < (int)strlen(input[i].argument2) - 1; z++)
+	for (; z < k - 1; z++)
 	{
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
 	
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = registers[howMuch] / 4 + index2;
+	if(input[i].argument2[k - 1] == ')') index2 = registers[howMuch] / 4 + index2;
 	else index2 = index2;
 	registers[index] = index2 * 4 + firstAddress;
 	registersNone[index] = 0;
@@ -849,7 +855,8 @@ void ST(int i)
 	int z = 0;
 	int o = 0;
 	char x = 0;
-	
+	int k = strlen(input[i].argument2);
+	int howMuch = 0;
 	
 	//get the first argument address
 	for (o = 0; o < 10; o++)
@@ -865,7 +872,7 @@ void ST(int i)
 	//get the shift of addresses
 	if ('0' <= input[i].argument2[0] && input[i].argument2[0] <= '9')
 	{
-		for (; (z < (int)strlen(input[i].argument2) && input[i].argument2[z] != '('); z++)
+		for (; (z < k && input[i].argument2[z] != '('); z++)
 		{
 			index2 *= 10;
 			index2 += input[i].argument2[z] - '0';
@@ -876,7 +883,7 @@ void ST(int i)
 	else
 	{	
 		for (z = 0; z < 30; z++) temporaryLabel[z] = x;
-		for (z = 0; z < (int)strlen(input[i].argument2); z++)
+		for (z = 0; z < k; z++)
 		{
 			if (input[i].argument2[z] == '(') break;
 			temporaryLabel[z] = input[i].argument2[z];
@@ -892,14 +899,13 @@ void ST(int i)
 	
 	//get the register number if address was shifted
 	z ++;
-	int howMuch = 0;
-	for (; z < (int)strlen(input[i].argument2) - 1; z++)
+	for (; z < k - 1; z++)
 	{
 		howMuch *= 10;
 		howMuch += input[i].argument2[z] - '0';
 	}
 	
-	if(input[i].argument2[(int)strlen(input[i].argument2) - 1] == ')') index2 = (registers[howMuch] + index2 - 100) /4;
+	if(input[i].argument2[k - 1] == ')') index2 = (registers[howMuch] + index2 - 100) /4;
 	else index2 = (index2 - 100) / 4;
 	memoryStackPrevious[index2] = 1;
 	memoryStack[index2] = registers[index];
